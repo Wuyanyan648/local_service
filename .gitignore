@@ -1,0 +1,7 @@
+.DS_Store
+*.swp
+*~
+
+# 编辑器
+.idea/
+.vscode/
