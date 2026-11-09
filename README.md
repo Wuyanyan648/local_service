@@ -99,30 +99,32 @@ git submodule update --init --recursive
 - 迁移内容：
   - `~/eric/wuyan_github/usb_wireless_network` → `~/eric/wuyan_github/local_service/usb_wireless_network`
   - `~/eric/wuyan_github/screen` → `~/eric/wuyan_github/local_service/screen`
-- 迁移前备份：
-  - `/tmp/local_service_migration_backup_20261109_221230/`（usb_wireless_network）
+- 迁移前备份（已从 `/tmp` 转入持久目录，共 7,061,207 字节）：
+  - `~/.local/share/local_service-migration-backup/local_service_migration_backup_20261109_221230/`（usb_wireless_network，310 个文件，6,411,815 字节）
     - `repos/usb_wireless_network/`：完整仓库快照（含 `.git`）
     - `user_autostart/`：`usbnic-host.desktop`、`screen-manager.desktop`、`hdmi-watchdog.desktop`
     - `system_units/`：`usbnicd.service`、`usbnic-boot.service`
     - `git_state/`：迁移前后的 HEAD / 分支 / 远端 / 端口 / xrandr
-  - `/tmp/local_service_migration_backup_20261109_223138/`（screen）
+  - `~/.local/share/local_service-migration-backup/local_service_migration_backup_20261109_223138/`（screen，147 个文件，649,392 字节）
     - `repos/screen/`：完整仓库快照（含 `.git`）
     - `user_systemd/`：`screen-manager.service`、`screen-portal.service`、`usbnic-session.service`
     - `user_autostart/`：`screen-session.desktop`、`screen-portal-open.desktop`
     - `git_state/`：迁移前后的 HEAD、`before.txt`、`xrandr_before.txt`、`ports_before.txt`、`health_before.txt`
 
-回滚步骤：
+回滚步骤（`$BK` 指向持久备份目录，直接复制可跑）：
 
 ```bash
+BK=~/.local/share/local_service-migration-backup
+
 # 1. 把目录移回原位
 mv ~/eric/wuyan_github/local_service/usb_wireless_network ~/eric/wuyan_github/usb_wireless_network
 mv ~/eric/wuyan_github/local_service/screen ~/eric/wuyan_github/screen
 
 # 2. 恢复自启配置
-cp /tmp/local_service_migration_backup_20261109_221230/user_autostart/usbnic-host.desktop ~/.config/autostart/
-cp /tmp/local_service_migration_backup_20261109_223138/user_autostart/*.desktop ~/.config/autostart/
-cp /tmp/local_service_migration_backup_20261109_223138/user_systemd/*.service ~/.config/systemd/user/
-sudo cp /tmp/local_service_migration_backup_20261109_221230/system_units/*.service /etc/systemd/system/
+cp $BK/local_service_migration_backup_20261109_221230/user_autostart/usbnic-host.desktop ~/.config/autostart/
+cp $BK/local_service_migration_backup_20261109_223138/user_autostart/*.desktop ~/.config/autostart/
+cp $BK/local_service_migration_backup_20261109_223138/user_systemd/*.service ~/.config/systemd/user/
+sudo cp $BK/local_service_migration_backup_20261109_221230/system_units/*.service /etc/systemd/system/
 
 # 3. 重载并重启
 systemctl --user daemon-reload
@@ -135,4 +137,4 @@ cd ~/eric/wuyan_github/local_service
 git rm --cached screen usb_wireless_network
 ```
 
-`/tmp` 会在重启后清空，需要长期保留请把备份目录挪到别处。
+备份在仓库目录之外，不会被父仓库跟踪；需要腾空间时直接删 `$BK` 下对应时间戳目录即可。
