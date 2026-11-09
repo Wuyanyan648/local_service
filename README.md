@@ -8,6 +8,7 @@
 | --- | --- | --- | --- | --- |
 | `usb_wireless_network/` | <https://github.com/Wuyanyan648/usb_wireless_network> | 8787 | RTL8156 2.5G USB 网卡管理（CLI）+ 家庭网关 Web 控制台 | `usbnicd.service`、`usbnic-boot.service`（system 级）+ `~/.config/autostart/usbnic-host.desktop`（登录后按模式打开界面） |
 | `screen/` | <https://github.com/Wuyanyan648/screen> | 8765 / 8760 | 显示器输出管理与亮度调节（8765）+ 本机服务门户（8760） | `screen-manager.service`、`screen-portal.service`、`usbnic-session.service`（systemd **用户**单元）+ `~/.config/autostart/screen-session.desktop`、`screen-portal-open.desktop` |
+| `theme_manager/` | <https://github.com/Wuyanyan648/theme_manager> | 8790 | 统一终端 / 桌面 GTK / gedit / Trae 的配色与字体：预设 + 微调 + 备份还原 | `theme-manager.service`（systemd **用户**单元，`WantedBy=default.target`，不需要 autostart 桌面项） |
 
 门户（8760）的服务清单在 `screen/portal/services.json`，新增服务时在那里追加一条，保存后 5 秒内热加载。
 
@@ -86,12 +87,12 @@ git submodule update --init --recursive
 - `/etc/systemd/system/usbnicd.service`（`WorkingDirectory`、`ExecStart`）
 - `/etc/systemd/system/usbnic-boot.service`（`ExecStart`）
 - `~/.config/autostart/usbnic-host.desktop`（`Exec`）
-- `~/.config/systemd/user/{screen-manager,screen-portal,usbnic-session}.service`（`WorkingDirectory`、`ExecStart`、`Documentation`）
+- `~/.config/systemd/user/{screen-manager,screen-portal,usbnic-session,theme-manager}.service`（`WorkingDirectory`、`ExecStart`、`Documentation`）
 - `~/.config/autostart/{screen-session,screen-portal-open}.desktop`（`Exec`、`Path`）
 - `/etc/systemd/system/usbnicd.service.d/10-screen-session.conf`（`ExecStop`，含 usb 仓库绝对路径）
 - `/etc/polkit-1/rules.d/49-screen-usbnicd.rules`
 
-重装方式：`usb_wireless_network/scripts/install-host-boot.sh`（system 级，需 root）、`screen/install-autostart.sh`（用户级，无需 sudo），两者都按脚本所在位置推导路径，迁移后重跑一次即可。
+重装方式：`usb_wireless_network/scripts/install-host-boot.sh`（system 级，需 root）、`screen/install-autostart.sh`（用户级，无需 sudo）、`theme_manager/install-autostart.sh`（用户级，无需 sudo），三者都按脚本所在位置推导路径，迁移后重跑一次即可。
 
 ## 迁移记录与回滚
 
