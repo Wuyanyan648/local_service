@@ -1,3 +1,6 @@
 [submodule "usb_wireless_network"]
 	path = usb_wireless_network
 	url = https://github.com/Wuyanyan648/usb_wireless_network.git
+[submodule "screen"]
+	path = screen
+	url = https://github.com/Wuyanyan648/screen.git

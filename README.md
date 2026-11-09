@@ -7,9 +7,9 @@
 | 目录 | 仓库 | 端口 | 用途 | 自启方式 |
 | --- | --- | --- | --- | --- |
 | `usb_wireless_network/` | <https://github.com/Wuyanyan648/usb_wireless_network> | 8787 | RTL8156 2.5G USB 网卡管理（CLI）+ 家庭网关 Web 控制台 | `usbnicd.service`、`usbnic-boot.service`（system 级）+ `~/.config/autostart/usbnic-host.desktop`（登录后按模式打开界面） |
-| `screen/` | <https://github.com/Wuyanyan648/screen> | 8765 | 显示器输出管理界面 | `~/.config/autostart/screen-manager.desktop` |
+| `screen/` | <https://github.com/Wuyanyan648/screen> | 8765 / 8760 | 显示器输出管理与亮度调节（8765）+ 本机服务门户（8760） | `screen-manager.service`、`screen-portal.service`、`usbnic-session.service`（systemd **用户**单元）+ `~/.config/autostart/screen-session.desktop`、`screen-portal-open.desktop` |
 
-> `screen` 处于**待迁移**状态（2026-11-09 起）：另一处改动（门户 / 服务托管改造）尚未提交，等它完成并推送后再迁入本仓库。
+门户（8760）的服务清单在 `screen/portal/services.json`，新增服务时在那里追加一条，保存后 5 秒内热加载。
 
 ## 为什么用 submodule（取舍）
 
@@ -76,7 +76,7 @@ git submodule update --init --recursive
 4. 自启放哪：
    - 需要 root（改网络、改显示输出等）：system 级 unit，`/etc/systemd/system/<name>.service`。
    - 只需要登录后 GUI 环境：`~/.config/autostart/<name>.desktop`，`Exec` / `Path` 必须是迁移后的绝对路径。
-5. 门户登记：`screen` 的「本机服务门户」有统一的服务清单（迁移完成后在 `screen/` 内对应配置文件里追加一条：名称、描述、端口、URL）。
+5. 门户登记：在 `screen/portal/services.json` 的 `services` 数组里追加一条（`id` / `name` / `desc` / `url` / `health` / `manage` / `unit`），保存后门户 5 秒内热加载。
 6. 回到本 README 的子仓库表格补一行。
 
 ## 绝对路径清单（迁移后必查）
@@ -86,33 +86,53 @@ git submodule update --init --recursive
 - `/etc/systemd/system/usbnicd.service`（`WorkingDirectory`、`ExecStart`）
 - `/etc/systemd/system/usbnic-boot.service`（`ExecStart`）
 - `~/.config/autostart/usbnic-host.desktop`（`Exec`）
-- `~/.config/autostart/screen-manager.desktop`（`Exec`、`Path`）— screen 迁移时处理
+- `~/.config/systemd/user/{screen-manager,screen-portal,usbnic-session}.service`（`WorkingDirectory`、`ExecStart`、`Documentation`）
+- `~/.config/autostart/{screen-session,screen-portal-open}.desktop`（`Exec`、`Path`）
+- `/etc/systemd/system/usbnicd.service.d/10-screen-session.conf`（`ExecStop`，含 usb 仓库绝对路径）
+- `/etc/polkit-1/rules.d/49-screen-usbnicd.rules`
 
-`usb_wireless_network/scripts/install-host-boot.sh` 会按脚本所在位置重新生成上面三个文件，迁移后重跑一次即可。
+重装方式：`usb_wireless_network/scripts/install-host-boot.sh`（system 级，需 root）、`screen/install-autostart.sh`（用户级，无需 sudo），两者都按脚本所在位置推导路径，迁移后重跑一次即可。
 
 ## 迁移记录与回滚
 
 - 迁移日期：2026-11-09
-- 迁移内容：`~/eric/wuyan_github/usb_wireless_network` → `~/eric/wuyan_github/local_service/usb_wireless_network`
-- 迁移前备份：`/tmp/local_service_migration_backup_20261109_221230/`
-  - `repos/usb_wireless_network/`：完整仓库快照（含 `.git`）
-  - `user_autostart/`：`usbnic-host.desktop`、`screen-manager.desktop`、`hdmi-watchdog.desktop`
-  - `system_units/`：`usbnicd.service`、`usbnic-boot.service`
-  - `git_state/before.txt`：迁移前各仓库 HEAD / 分支 / 远端
+- 迁移内容：
+  - `~/eric/wuyan_github/usb_wireless_network` → `~/eric/wuyan_github/local_service/usb_wireless_network`
+  - `~/eric/wuyan_github/screen` → `~/eric/wuyan_github/local_service/screen`
+- 迁移前备份：
+  - `/tmp/local_service_migration_backup_20261109_221230/`（usb_wireless_network）
+    - `repos/usb_wireless_network/`：完整仓库快照（含 `.git`）
+    - `user_autostart/`：`usbnic-host.desktop`、`screen-manager.desktop`、`hdmi-watchdog.desktop`
+    - `system_units/`：`usbnicd.service`、`usbnic-boot.service`
+    - `git_state/`：迁移前后的 HEAD / 分支 / 远端 / 端口 / xrandr
+  - `/tmp/local_service_migration_backup_20261109_223138/`（screen）
+    - `repos/screen/`：完整仓库快照（含 `.git`）
+    - `user_systemd/`：`screen-manager.service`、`screen-portal.service`、`usbnic-session.service`
+    - `user_autostart/`：`screen-session.desktop`、`screen-portal-open.desktop`
+    - `git_state/`：迁移前后的 HEAD、`before.txt`、`xrandr_before.txt`、`ports_before.txt`、`health_before.txt`
 
 回滚步骤：
 
 ```bash
 # 1. 把目录移回原位
 mv ~/eric/wuyan_github/local_service/usb_wireless_network ~/eric/wuyan_github/usb_wireless_network
+mv ~/eric/wuyan_github/local_service/screen ~/eric/wuyan_github/screen
 
 # 2. 恢复自启配置
 cp /tmp/local_service_migration_backup_20261109_221230/user_autostart/usbnic-host.desktop ~/.config/autostart/
+cp /tmp/local_service_migration_backup_20261109_223138/user_autostart/*.desktop ~/.config/autostart/
+cp /tmp/local_service_migration_backup_20261109_223138/user_systemd/*.service ~/.config/systemd/user/
 sudo cp /tmp/local_service_migration_backup_20261109_221230/system_units/*.service /etc/systemd/system/
 
 # 3. 重载并重启
+systemctl --user daemon-reload
+systemctl --user restart screen-manager.service screen-portal.service
 sudo systemctl daemon-reload
 sudo systemctl restart usbnicd.service
+
+# 4. 父仓库里把子模块记录撤掉（只影响父仓库，不动已移回的目录）
+cd ~/eric/wuyan_github/local_service
+git rm --cached screen usb_wireless_network
 ```
 
 `/tmp` 会在重启后清空，需要长期保留请把备份目录挪到别处。
