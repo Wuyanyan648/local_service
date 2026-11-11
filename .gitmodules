@@ -7,3 +7,6 @@
 [submodule "theme_manager"]
 	path = theme_manager
 	url = https://github.com/Wuyanyan648/theme_manager.git
+[submodule "usb_device_manager"]
+	path = usb_device_manager
+	url = https://github.com/Wuyanyan648/usb_device_manager.git

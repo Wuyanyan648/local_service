@@ -9,6 +9,7 @@
 | `usb_wireless_network/` | <https://github.com/Wuyanyan648/usb_wireless_network> | 8787 | RTL8156 2.5G USB 网卡管理（CLI）+ 家庭网关 Web 控制台 | `usbnicd.service`、`usbnic-boot.service`（system 级）+ `~/.config/autostart/usbnic-host.desktop`（登录后按模式打开界面） |
 | `screen/` | <https://github.com/Wuyanyan648/screen> | 8765 / 8760 | 显示器输出管理与亮度调节（8765）+ 本机服务门户（8760） | `screen-manager.service`、`screen-portal.service`、`usbnic-session.service`（systemd **用户**单元）+ `~/.config/autostart/screen-session.desktop`、`screen-portal-open.desktop` |
 | `theme_manager/` | <https://github.com/Wuyanyan648/theme_manager> | 8790 | 统一终端 / 桌面 GTK / gedit / Trae 的配色与字体：预设 + 微调 + 备份还原 | `theme-manager.service`（systemd **用户**单元，`WantedBy=default.target`，不需要 autostart 桌面项） |
+| `usb_device_manager/` | <https://github.com/Wuyanyan648/usb_device_manager>（私有） | 8795 | USB 拓扑 / 端口供电与带宽 / 开机枚举失败历史，按设备开关通信链路（`authorized` 0/1） | `usbdevd.service`（system 级 root 单元）+ polkit 规则 `49-usbdevd.rules` |
 
 门户（8760）的服务清单在 `screen/portal/services.json`，新增服务时在那里追加一条，保存后 5 秒内热加载。
 
